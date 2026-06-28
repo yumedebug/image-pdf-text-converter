@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Format Converter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:    #2563eb;
+      --brand-dk: #1d4ed8;
+      --bg:       #f8fafc;
+      --surface:  #ffffff;
+      --border:   #e2e8f0;
+      --text:     #0f172a;
+      --muted:    #64748b;
+      --tag-bg:   #eff6ff;
+      --tag-col:  #1d4ed8;
+      --radius:   10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── hero ──────────────────────────────────────────────── */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 24px 64px;
+      text-align: center;
+    }
+    .hero-icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 14px;
+    }
+    .hero p {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+    .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--brand-dk); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-outline:hover { background: var(--bg); }
+
+    /* ── section wrapper ─────────────────────────────────────── */
+    .section { padding: 64px 24px; max-width: 900px; margin: 0 auto; }
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    /* ── conversion cards ────────────────────────────────────── */
+    .conv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .conv-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+    }
+    .conv-card-icon { font-size: 26px; margin-bottom: 10px; }
+    .conv-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .conv-card p  { font-size: 13px; color: var(--muted); }
+    .arrow { color: var(--brand); margin: 0 4px; }
+
+    /* ── features ────────────────────────────────────────────── */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 22px;
+      display: flex;
+      gap: 16px;
+    }
+    .feat-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: var(--tag-bg);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .feat-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .feat-card p  { font-size: 13px; color: var(--muted); }
+
+    /* ── setup steps ─────────────────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 16px; }
+    .step {
+      display: flex;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--brand);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .step p  { font-size: 13px; color: var(--muted); }
+    pre {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: "Cascadia Code", "Fira Code", "Courier New", monospace;
+      margin-top: 10px;
+      overflow-x: auto;
+      color: #1e293b;
+    }
+
+    /* ── libs table ──────────────────────────────────────────── */
+    .libs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+    }
+    .lib-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .lib-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .lib-role { font-size: 12px; color: var(--muted); }
+    .lib-tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-col);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* ── cta ─────────────────────────────────────────────────── */
+    .cta {
+      text-align: center;
+      padding: 64px 24px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .cta h2 { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+    .cta p  { color: var(--muted); margin-bottom: 28px; }
+
+    /* ── footer ──────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--brand); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── divider ─────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HERO ─────────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="hero-icon">📂</div>
+    <h1>File Format Converter</h1>
+    <p>Python 製のファイル形式変換デスクトップアプリ。ドラッグ＆ドロップ対応のモダンな GUI で、画像・PDF・テキストを手軽に変換できます。</p>
+    <div class="btn-group">
+      <a class="btn btn-primary"
+         href="https://github.com/yumedebug/image-pdf-text-converter"
+         target="_blank" rel="noopener">
+        ⬡ GitHub で見る
+      </a>
+      <a class="btn btn-outline"
+         href="https://github.com/yumedebug/image-pdf-text-converter/archive/refs/heads/main.zip"
+         target="_blank" rel="noopener">
+        ↓ ZIP でダウンロード
+      </a>
+    </div>
+  </header>
+
+  <!-- ── 対応変換 ──────────────────────────────────────────────── -->
+  <section class="section">
+    <h2 class="section-title">対応している変換</h2>
+    <div class="conv-grid">
+
+      <div class="conv-card">
+        <div class="conv-card-icon">🖼</div>
+        <h3>画像形式の変換</h3>
+        <p>
+          <span class="arrow">JPG</span> ⇄
+          <span class="arrow">PNG</span> ⇄
+          <span class="arrow">WebP</span><br>
+          相互変換に対応
+        </p>
+      </div>
+
+      <div class="conv-card">
+        <div class="conv-card-icon">📄</div>
+        <h3>PDF を画像に変換</h3>
+        <p>
+          PDF <span class="arrow">→</span> PNG / WebP<br>
+          各ページを個別の画像ファイルとして書き出し
+        </p>
+      </div>
+
+      <div class="conv-card">
+        <div class="conv-card-icon">🗂</div>
+        <h3>画像を PDF に結合</h3>
+        <p>
+          JPG / PNG <span class="arrow">→</span> PDF<br>
+          複数の画像ファイルを 1 つの PDF に結合
+        </p>
+      </div>
+
+      <div class="conv-card">
+        <div class="conv-card-icon">📝</div>
+        <h3>テキストを PDF に変換</h3>
+        <p>
+          TXT <span class="arrow">→</span> PDF<br>
+          日本語対応（MS ゴシック / CID フォント）
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ── 主な機能 ──────────────────────────────────────────────── -->
+  <section class="section">
+    <h2 class="section-title">主な機能</h2>
+    <div class="feat-grid">
+
+      <div class="feat-card">
+        <div class="feat-icon">🪟</div>
+        <div>
+          <h3>モダンな GUI</h3>
+          <p>CustomTkinter によるダーク / ライトモード対応のデスクトップアプリ</p>
+        </div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">📁</div>
+        <div>
+          <h3>ドラッグ＆ドロップ</h3>
+          <p>ウィンドウ全体にファイルをドロップして即追加。ボタン選択も可能</p>
+        </div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">✏️</div>
+        <div>
+          <h3>出力ファイル名の入力</h3>
+          <p>ファイル追加時に自動入力。複数ファイルは連番（_001, _002…）で保存</p>
+        </div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <div>
+          <h3>プログレスバー</h3>
+          <p>変換の進捗をリアルタイム表示。完了時にポップアップで通知</p>
+        </div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">📦</div>
+        <div>
+          <h3>exe ファイルに変換可能</h3>
+          <p>PyInstaller で 1 つの exe にパッケージ化。Python 不要で配布できる</p>
+        </div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">🇯🇵</div>
+        <div>
+          <h3>日本語 PDF 対応</h3>
+          <p>MS ゴシック / 游ゴシック / メイリオを自動検出して PDF に埋め込み</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ── セットアップ ──────────────────────────────────────────── -->
+  <section class="section">
+    <h2 class="section-title">セットアップ</h2>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>リポジトリをクローン</h3>
+          <p>または ZIP でダウンロードして解凍してください。</p>
+          <pre>git clone https://github.com/yumedebug/image-pdf-text-converter.git
+cd image-pdf-text-converter</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>仮想環境を作成して有効化</h3>
+          <pre>python -m venv venv
+venv\Scripts\activate   # Windows
+source venv/bin/activate # macOS / Linux</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>依存ライブラリをインストール</h3>
+          <pre>pip install -r requirements.txt</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h3>アプリを起動</h3>
+          <pre>python converter.py</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <h3>exe ファイルにパッケージ化（任意）</h3>
+          <p>Windows 向けに 1 ファイルの exe を生成します。</p>
+          <pre>pip install pyinstaller
+pyinstaller converter.spec</pre>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ── 使用ライブラリ ─────────────────────────────────────────── -->
+  <section class="section">
+    <h2 class="section-title">使用ライブラリ</h2>
+    <div class="libs-grid">
+
+      <div class="lib-card">
+        <div class="lib-tag">GUI</div>
+        <div class="lib-name">CustomTkinter</div>
+        <div class="lib-role">モダンなデスクトップ UI フレームワーク</div>
+      </div>
+
+      <div class="lib-card">
+        <div class="lib-tag">画像処理</div>
+        <div class="lib-name">Pillow</div>
+        <div class="lib-role">画像の読み書き・形式変換</div>
+      </div>
+
+      <div class="lib-card">
+        <div class="lib-tag">PDF 操作</div>
+        <div class="lib-name">PyMuPDF</div>
+        <div class="lib-role">PDF の生成・ページ画像化（poppler 不要）</div>
+      </div>
+
+      <div class="lib-card">
+        <div class="lib-tag">PDF 生成</div>
+        <div class="lib-name">ReportLab</div>
+        <div class="lib-role">TXT → PDF 変換・日本語フォント対応</div>
+      </div>
+
+      <div class="lib-card">
+        <div class="lib-tag">D&D</div>
+        <div class="lib-name">tkinterdnd2</div>
+        <div class="lib-role">ドラッグ＆ドロップ対応（任意）</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── CTA ───────────────────────────────────────────────────── -->
+  <div class="cta">
+    <h2>さっそく使ってみる</h2>
+    <p>ソースコードは GitHub で公開しています。issues や pull request も歓迎です。</p>
+    <div class="btn-group">
+      <a class="btn btn-primary"
+         href="https://github.com/yumedebug/image-pdf-text-converter"
+         target="_blank" rel="noopener">
+        ⬡ リポジトリを開く
+      </a>
+      <a class="btn btn-outline"
+         href="https://github.com/yumedebug/image-pdf-text-converter/issues"
+         target="_blank" rel="noopener">
+        🐛 Issue を報告
+      </a>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer>
+    <p>
+      MIT License &nbsp;·&nbsp;
+      <a href="https://github.com/yumedebug/image-pdf-text-converter" target="_blank" rel="noopener">
+        GitHub
+      </a>
+    </p>
+  </footer>
+
+</body>
+</html>
